@@ -1,0 +1,11 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+pydantic>=2.7,<3
+sqlalchemy>=2.0,<3
+python-multipart>=0.0.9
+numpy>=1.26
+scikit-learn>=1.4
+xgboost>=2.0
+shap>=0.45
+networkx>=3.2
+opencv-python-headless>=4.9,<5

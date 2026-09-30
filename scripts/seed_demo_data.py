@@ -22,6 +22,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+for _stream in (sys.stdout, sys.stderr):  # Windows consoles may not default to UTF-8
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        pass
 
 from app.config import get_settings  # noqa: E402
 from app.utils.logging import configure_logging  # noqa: E402

@@ -25,6 +25,11 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+for _stream in (sys.stdout, sys.stderr):  # Windows consoles may not default to UTF-8
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        pass
 from app.services.scenarios import DEMO, SIMULATION_BANNER, flagship_attack  # noqa: E402
 
 GREEN, RED, YELLOW, CYAN, DIM, BOLD, RESET = "\033[92m", "\033[91m", "\033[93m", "\033[96m", "\033[2m", "\033[1m", "\033[0m"

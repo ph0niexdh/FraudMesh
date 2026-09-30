@@ -3,7 +3,13 @@ from __future__ import annotations
 
 import os
 import re
-import resource
+import sys
+import time
+
+try:  # POSIX only; not available on Windows
+    import resource
+except ImportError:  # pragma: no cover - platform dependent
+    resource = None  # type: ignore[assignment]
 from datetime import timedelta
 from typing import Any
 
@@ -138,7 +144,14 @@ def model_monitoring(s: Session, engine: FraudMeshEngine) -> dict[str, Any]:
     with_expl = sum(1 for e in cases if e)
     with_top = sum(1 for e in cases if e and len(e) >= 3)
 
-    usage = resource.getrusage(resource.RUSAGE_SELF)
+    if resource is not None:
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        # ru_maxrss is KiB on Linux, bytes on macOS
+        rss_mb = usage.ru_maxrss / (1024 * 1024 if sys.platform == "darwin" else 1024)
+        cpu_s = usage.ru_utime
+    else:
+        rss_mb = None
+        cpu_s = time.process_time()
     det_rows = []
     for det, extra in (
         (engine.txn, {"type": "XGBoost classifier", "trained_at": engine.txn.trained_at,
@@ -181,8 +194,8 @@ def model_monitoring(s: Session, engine: FraudMeshEngine) -> dict[str, Any]:
         "audit": {"events": n_events, "events_with_audit_record": audited,
                   "audit_coverage": round(audited / n_events, 4) if n_events else None},
         "system": {
-            "max_rss_mb": round(usage.ru_maxrss / 1024, 1),
-            "cpu_user_seconds": round(usage.ru_utime, 1),
+            "max_rss_mb": round(rss_mb, 1) if rss_mb is not None else None,
+            "cpu_user_seconds": round(cpu_s, 1),
             "pid": os.getpid(),
             "uptime_seconds": int((utcnow() - engine.started_at).total_seconds()),
         },

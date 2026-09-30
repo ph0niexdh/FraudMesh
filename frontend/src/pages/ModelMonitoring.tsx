@@ -224,7 +224,7 @@ export function ModelMonitoring() {
         </Panel>
         <Panel title="System">
           <div className="space-y-2">
-            <Stat label="Peak RSS" value={`${m.system.max_rss_mb} MB`} />
+            <Stat label="Peak RSS" value={m.system.max_rss_mb != null ? `${m.system.max_rss_mb} MB` : "n/a on this OS"} />
             <Stat label="CPU (user)" value={`${m.system.cpu_user_seconds} s`} />
             <Stat label="Uptime" value={`${Math.floor(m.system.uptime_seconds / 60)} min`} />
           </div>

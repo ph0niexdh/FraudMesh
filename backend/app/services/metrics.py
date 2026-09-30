@@ -130,7 +130,10 @@ def model_monitoring(s: Session, engine: FraudMeshEngine) -> dict[str, Any]:
     kyc_total = s.scalar(select(func.count()).select_from(KycEvent)) or 0
     kyc_retained = s.scalar(select(func.count()).select_from(KycEvent).where(KycEvent.media_retained.is_(True))) or 0
     n_events = s.scalar(select(func.count()).select_from(Event)) or 0
-    audited = s.scalar(select(func.count(func.distinct(AuditLog.entity_id))).where(AuditLog.action == "event.received")) or 0
+    # audit is append-only (reset demo events keep their audit rows) — count only events that still exist
+    audited = s.scalar(select(func.count(func.distinct(AuditLog.entity_id)))
+                       .where(AuditLog.action == "event.received",
+                              AuditLog.entity_id.in_(select(Event.event_id)))) or 0
     cases = s.scalars(select(FraudCase.explanations)).all()
     with_expl = sum(1 for e in cases if e)
     with_top = sum(1 for e in cases if e and len(e) >= 3)

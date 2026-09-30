@@ -20,6 +20,7 @@ import networkx as nx
 from app.schemas.events import EventType, NormalizedEvent
 from app.utils.timeutil import iso
 
+HUB_TYPES = {"cloud_principal", "cloud_resource", "ip"}
 ENTITY_TYPES = ("customer", "account", "device", "ip", "kyc", "cloud_resource", "cloud_principal", "transaction")
 
 
@@ -236,7 +237,7 @@ class EntityGraph:
         return paths[:20]
 
     def export(self, centers: Iterable[str], depth: int = 1, limit: int = 250,
-               include_events: set[str] | None = None) -> dict[str, Any]:
+               include_events: set[str] | None = None, hub_limit: int = 12) -> dict[str, Any]:
         """Undirected BFS neighbourhood around ``centers`` as JSON for the UI."""
         with self.lock:
             centers = [c for c in dict.fromkeys(centers) if c and c in self.g]
@@ -246,6 +247,10 @@ class EntityGraph:
             while queue and len(seen) < limit:
                 cur = queue.popleft()
                 if seen[cur] >= depth:
+                    continue
+                # don't fan out through busy infrastructure hubs (e.g. a service principal used by
+                # every corporate IP) — they add noise, not evidence
+                if self.g.nodes[cur]["type"] in HUB_TYPES and und.degree(cur) > hub_limit:
                     continue
                 for nb in und.neighbors(cur):
                     if nb in seen:

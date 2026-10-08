@@ -20,6 +20,8 @@ os.environ["FM_REDIS_URL"] = os.environ.get("FM_TEST_REDIS_URL", "redis://127.0.
 os.environ["FM_NEO4J_URI"] = os.environ.get("FM_TEST_NEO4J_URI", "bolt://127.0.0.1:7688")
 os.environ["FM_NEO4J_PASSWORD"] = os.environ.get("FM_TEST_NEO4J_PASSWORD", "fraudmesh-test")
 os.environ.setdefault("FM_SEED_ON_START", "false")
+os.environ.setdefault("FM_BACKGROUND_TRAFFIC", "false")
+os.environ.setdefault("FM_WARM_MODELS", "false")
 
 import pytest  # noqa: E402
 from asgi_lifespan import LifespanManager  # noqa: E402
@@ -89,3 +91,23 @@ async def analyst_headers(client):
 @pytest.fixture(scope="session")
 async def auditor_headers(client):
     return await login_as(client, "auditor@fraudmesh.local")
+
+
+@pytest.fixture(scope="session")
+async def seeded(app):
+    """Small deterministic synthetic population for integration tests."""
+    from fraudmesh.db.session import sessionmaker
+    from fraudmesh.services.simulator import population
+
+    async with sessionmaker()() as db:
+        if not await population.is_seeded(db):
+            await population.seed(db, n_customers=30, seed_value=7, history_days=3)
+    return True
+
+
+FIXTURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "fixtures", "media")
+
+
+def fixture_bytes(name: str) -> bytes:
+    with open(os.path.join(FIXTURES, name), "rb") as f:
+        return f.read()

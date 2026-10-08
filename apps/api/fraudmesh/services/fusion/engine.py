@@ -86,9 +86,17 @@ def fuse(domains: dict[str, DomainInput], overrides: dict[str, float | None] | N
         conf = src.confidence if src else 1.0
         if d in FLOOR_DOMAINS and conf >= FLOOR_MIN_CONFIDENCE and r * 100 * FLOOR_FACTOR > floor:
             floor, floor_domain = r * 100 * FLOOR_FACTOR, d
-    floored = floor > score
-    score = max(score, floor)
-
+    floored = False
+    if floor_domain is not None:
+        # The floor is the posterior from the high-precision detector alone; independent
+        # evidence from the other domains then updates it in log-odds (naive-Bayes style),
+        # so corroboration always raises the score instead of being masked by the floor.
+        f = min(floor, 99.9) / 100
+        z_floor = math.log(f / (1 - f)) + sum(t for d, t in terms.items() if d != floor_domain) \
+            + p["corroboration_weight"] * len([d for d in corroborating if d != floor_domain])
+        if z_floor > z:
+            z, floored = z_floor, True
+            score = 100 / (1 + math.exp(-z))
     contributions = []
     positive_total = sum(terms.values()) + corr_term or 1.0
     for d in DOMAINS:

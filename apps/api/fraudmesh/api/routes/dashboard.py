@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import and_, case as sql_case, func, select
+from sqlalchemy import and_, case as sql_case, func, literal_column, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fraudmesh.api.deps import CurrentUser, require
@@ -67,11 +67,11 @@ async def dashboard(cu: CurrentUser = Depends(require("dashboard:read")), db: As
     d1 = now - timedelta(hours=24)
     hour = func.date_trunc("hour", Event.received_at)
     ev_rows = (await db.execute(select(hour, func.count(), func.sum(sql_case((Event.risk_score >= 40, 1), else_=0)))
-                                .where(LIVE, Event.received_at >= d1).group_by(hour))).all()
+                                .where(LIVE, Event.received_at >= d1).group_by(literal_column("1")))).all()
     ahour = func.date_trunc("hour", Alert.created_at)
-    al_rows = (await db.execute(select(ahour, Alert.severity, func.count()).where(Alert.created_at >= d1).group_by(ahour, Alert.severity))).all()
+    al_rows = (await db.execute(select(ahour, Alert.severity, func.count()).where(Alert.created_at >= d1).group_by(literal_column("1"), literal_column("2")))).all()
     chour = func.date_trunc("hour", Case.created_at)
-    case_rows = (await db.execute(select(chour, func.count()).where(Case.created_at >= d1).group_by(chour))).all()
+    case_rows = (await db.execute(select(chour, func.count()).where(Case.created_at >= d1).group_by(literal_column("1")))).all()
     buckets: dict[str, dict] = {}
     for i in range(24, -1, -1):
         t = (now - timedelta(hours=i)).replace(minute=0, second=0, microsecond=0)
@@ -90,7 +90,7 @@ async def dashboard(cu: CurrentUser = Depends(require("dashboard:read")), db: As
             b["cases"] = int(n)
 
     bins = (await db.execute(select(func.width_bucket(Event.risk_score, 0, 100.0001, 10), func.count())
-                             .where(LIVE, Event.received_at >= d1).group_by(func.width_bucket(Event.risk_score, 0, 100.0001, 10)))).all()
+                             .where(LIVE, Event.received_at >= d1).group_by(literal_column("1")))).all()
     hist = [{"bin": f"{(i - 1) * 10}-{i * 10}", "count": 0} for i in range(1, 11)]
     for b, n in bins:
         if 1 <= b <= 10:

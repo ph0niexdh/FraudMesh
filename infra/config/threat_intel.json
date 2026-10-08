@@ -1,0 +1,29 @@
+{
+  "_notice": "DEMO threat-intelligence feed. All ranges are RFC 5737 documentation networks or RFC 6598 shared space, so no real host is implicated. Replace with a commercial / MISP feed in production.",
+  "networks": [
+    {"cidr": "203.0.113.0/24", "category": "known_malicious", "risk": 0.92, "source": "demo-intel:botnet-c2"},
+    {"cidr": "198.51.100.0/24", "category": "hosting_vps", "risk": 0.55, "source": "demo-intel:hosting-asn"},
+    {"cidr": "192.0.2.0/24", "category": "tor_exit", "risk": 0.75, "source": "demo-intel:tor-exits"},
+    {"cidr": "100.64.0.0/10", "category": "residential_isp", "risk": 0.02, "source": "demo-intel:isp"},
+    {"cidr": "10.0.0.0/8", "category": "internal", "risk": 0.0, "source": "rfc1918"},
+    {"cidr": "172.16.0.0/12", "category": "internal", "risk": 0.0, "source": "rfc1918"},
+    {"cidr": "192.168.0.0/16", "category": "internal", "risk": 0.0, "source": "rfc1918"}
+  ],
+  "ja3": [
+    {"hash": "e7d705a3286e19ea42f587b344ee6865", "label": "demo-intel: automation framework TLS client", "risk": 0.6},
+    {"hash": "6734f37431670b3ab4292b8f60f29984", "label": "demo-intel: credential-stuffing toolkit", "risk": 0.85}
+  ],
+  "domains": [
+    {"domain": "secure-login-verify.example", "label": "demo-intel: phishing kit", "risk": 0.9},
+    {"domain": "cdn-sync-update.example", "label": "demo-intel: infostealer C2", "risk": 0.95}
+  ],
+  "user_agents": [
+    {"pattern": "python-requests", "label": "scripted HTTP client", "risk": 0.45},
+    {"pattern": "curl/", "label": "scripted HTTP client", "risk": 0.35},
+    {"pattern": "sqlmap", "label": "SQL injection scanner", "risk": 0.95},
+    {"pattern": "Hydra", "label": "password brute-force tool", "risk": 0.95},
+    {"pattern": "OpenBullet", "label": "credential-stuffing tool", "risk": 0.95}
+  ],
+  "auth_endpoints": ["/api/login", "/login", "/oauth/token", "/api/auth/login"],
+  "protected_domains": ["netbanking.demo-bank.example", "api.demo-bank.example"]
+}

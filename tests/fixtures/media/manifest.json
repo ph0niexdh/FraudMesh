@@ -1,0 +1,31 @@
+{
+  "real_portrait.png": {
+    "label": "genuine",
+    "kind": "image"
+  },
+  "deepfake_faceswap.png": {
+    "label": "manipulated",
+    "kind": "image"
+  },
+  "replay_attack.png": {
+    "label": "presentation_attack",
+    "kind": "image"
+  },
+  "real_selfie.mp4": {
+    "label": "genuine",
+    "kind": "video"
+  },
+  "deepfake_selfie.mp4": {
+    "label": "manipulated",
+    "kind": "video"
+  },
+  "id_document_genuine.png": {
+    "label": "genuine_document",
+    "kind": "document"
+  },
+  "id_document_tampered.png": {
+    "label": "tampered_document",
+    "kind": "document"
+  },
+  "_source": "skimage.data.astronaut() \u2014 NASA official portrait, public domain. Documents are fictitious SPECIMENs."
+}

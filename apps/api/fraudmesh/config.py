@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     fixture_dir: Path = REPO_ROOT / "tests" / "fixtures" / "media"
     # "auto" picks the EfficientNet-B4 detector when its weights exist, otherwise Meso4.
     deepfake_model: str = "auto"
-    deepfake_max_frames: int = 8
+    deepfake_max_frames: int = 6
     torch_threads: int = 4
     max_upload_mb: int = 25
 

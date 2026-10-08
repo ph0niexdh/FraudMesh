@@ -244,26 +244,11 @@ def verify(
     field_cov = len(printed) / len(LABELS)
     mrz_ok = 1.0 if (mrz and mrz["valid"]) else (0.5 if mrz else 0.3)
     document_confidence = float(np.clip(ocr_conf * (0.4 + 0.6 * field_cov) * (0.5 + 0.5 * mrz_ok) * (0.6 + 0.4 * type_conf), 0, 1))
-
-    kyc_risk = 0.0
-    for c in checks:
-        if c["status"] == "FAIL":
-            kyc_risk += _SEVERITY_WEIGHT[c["severity"]]
-        elif c["status"] == "WARN":
-            kyc_risk += _SEVERITY_WEIGHT[c["severity"]] * 0.35
-    kyc_risk = float(min(100.0, kyc_risk + (1 - document_confidence) * 15))
-
     deepfake_risk = max(
         (selfie_analysis or {}).get("risk_score") or 0.0,
         (doc_portrait_analysis or {}).get("risk_score") or 0.0,
     )
-    match_score = face_match.get("similarity")
-    identity_confidence = float(np.clip(
-        (0.35 + 0.65 * max(0.0, (match_score - 0.2) / 0.5) if match_score is not None else 0.5)
-        * (1 - deepfake_risk / 100) * (0.5 + 0.5 * document_confidence), 0, 1))
-    # noisy-OR: independent failure modes compound
-    overall = 100 * (1 - (1 - kyc_risk / 100) * (1 - deepfake_risk / 100))
-    decision = "APPROVE" if overall < 35 else ("REVIEW" if overall < 65 else "REJECT")
+    scores, decision = score_checks(checks, document_confidence, deepfake_risk, face_match.get("similarity"))
 
     fields_masked = {
         "surname": (mrz or {}).get("surname") or printed.get("surname", {}).get("value"),
@@ -287,19 +272,53 @@ def verify(
         "selfie": selfie_analysis,
         "face_match": face_match,
         "checks": checks,
-        "scores": {
-            "kyc_risk": round(kyc_risk, 1),
-            "deepfake_risk": round(deepfake_risk, 1),
-            "document_confidence": round(document_confidence, 3),
-            "identity_confidence": round(identity_confidence, 3),
-            "overall_identity_risk": round(overall, 1),
-        },
+        "scores": scores,
         "decision": decision,
         "doc_number_hmac": doc_hmac,
         "document_embedding": doc_embedding.tolist() if doc_embedding is not None else None,
         "stages_ms": stages,
         "latency_ms": round((time.perf_counter() - t0) * 1000, 1),
     }
+
+
+def score_checks(checks: list[dict], document_confidence: float, deepfake_risk: float, match_score: float | None) -> tuple[dict, str]:
+    kyc_risk = 0.0
+    for c in checks:
+        if c["status"] == "FAIL":
+            kyc_risk += _SEVERITY_WEIGHT[c["severity"]]
+        elif c["status"] == "WARN":
+            kyc_risk += _SEVERITY_WEIGHT[c["severity"]] * 0.35
+    kyc_risk = float(min(100.0, kyc_risk + (1 - document_confidence) * 15))
+    identity_confidence = float(np.clip(
+        (0.35 + 0.65 * max(0.0, (match_score - 0.2) / 0.5) if match_score is not None else 0.5)
+        * (1 - deepfake_risk / 100) * (0.5 + 0.5 * document_confidence), 0, 1))
+    # noisy-OR: independent failure modes compound
+    overall = 100 * (1 - (1 - kyc_risk / 100) * (1 - deepfake_risk / 100))
+    decision = "APPROVE" if overall < 35 else ("REVIEW" if overall < 65 else "REJECT")
+    scores = {
+        "kyc_risk": round(kyc_risk, 1),
+        "deepfake_risk": round(deepfake_risk, 1),
+        "document_confidence": round(document_confidence, 3),
+        "identity_confidence": round(identity_confidence, 3),
+        "overall_identity_risk": round(overall, 1),
+    }
+    return scores, decision
+
+
+def apply_reuse_check(result: dict, owner: str | None, customer_id: str | None) -> dict:
+    """Add the database-backed document re-use check (async caller) and re-score."""
+    if not result.get("doc_number_hmac"):
+        return result
+    if owner and owner != customer_id:
+        chk = _check("document_reuse", "Document not registered to another customer", "FAIL", "critical",
+                     "this document number was already used by a different customer (possible synthetic identity)")
+    else:
+        chk = _check("document_reuse", "Document not registered to another customer", "PASS", "critical", "no conflicting registration")
+    result["checks"] = [c for c in result["checks"] if c["id"] != "document_reuse"] + [chk]
+    s = result["scores"]
+    result["scores"], result["decision"] = score_checks(result["checks"], s["document_confidence"], s["deepfake_risk"],
+                                                         (result.get("face_match") or {}).get("similarity"))
+    return result
 
 
 def _slim(a: dict | None) -> dict | None:

@@ -201,7 +201,9 @@ def behavior_sessions(n_normal: int, n_anomalous: int, seed: int) -> tuple[np.nd
 
     def normal(k):
         return np.column_stack([
-            np.abs(rng.normal(0, 1.5, k)),  # hours from typical login hour
+            # hours from typical login hour: mostly near habit, but genuine customers also
+            # bank late in the evening / early morning (30% spread over the day)
+            np.where(rng.random(k) < 0.7, np.abs(rng.normal(0, 1.5, k)), rng.uniform(0, 10, k)),
             rng.lognormal(0, 0.35, k),
             np.abs(rng.normal(0, 1, k)),
             np.log1p(np.abs(rng.normal(0, 10, k)) * (1 + 40 * (rng.random(k) < 0.05))),

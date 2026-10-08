@@ -1,0 +1,315 @@
+{
+  "name": "transaction-fraud",
+  "version": "lightgbm-20261008",
+  "framework": "lightgbm",
+  "model_type": "Gradient-boosted decision trees (binary classification)",
+  "trained_at": "2026-10-08T16:04:10+00:00",
+  "artifact": "model.txt",
+  "artifact_sha256": "b8cc65442f249c7e5143ab6b0a8cce88daec64f235bcd3672391b1dc7cf2e5a0",
+  "dataset": {
+    "source": "FraudMesh synthetic generator (apps/api/fraudmesh/services/simulator/datagen.py)",
+    "rows": 80000,
+    "fraud_rate": 0.049,
+    "seed": 7,
+    "segments": {
+      "routine": {
+        "weight": 0.62,
+        "fraud": false
+      },
+      "traveller": {
+        "weight": 0.06,
+        "fraud": false
+      },
+      "new_phone": {
+        "weight": 0.05,
+        "fraud": false
+      },
+      "big_purchase": {
+        "weight": 0.07,
+        "fraud": false
+      },
+      "night_owl": {
+        "weight": 0.06,
+        "fraud": false
+      },
+      "new_payee": {
+        "weight": 0.08,
+        "fraud": false
+      },
+      "risky_but_legit": {
+        "weight": 0.015,
+        "fraud": false
+      },
+      "ato": {
+        "weight": 0.012,
+        "fraud": true
+      },
+      "mule": {
+        "weight": 0.01,
+        "fraud": true
+      },
+      "deepfake_onboarding": {
+        "weight": 0.006,
+        "fraud": true
+      },
+      "card_testing": {
+        "weight": 0.008,
+        "fraud": true
+      },
+      "app_scam": {
+        "weight": 0.009,
+        "fraud": true
+      }
+    },
+    "label_noise": 0.005,
+    "splits": {
+      "train": 48000,
+      "calibration": 16000,
+      "test": 16000
+    }
+  },
+  "features": [
+    {
+      "name": "log_amount",
+      "description": "log(1 + amount)",
+      "kind": "numeric"
+    },
+    {
+      "name": "amount_deviation",
+      "description": "z-score of amount vs the customer's own history",
+      "kind": "numeric"
+    },
+    {
+      "name": "amount_to_balance",
+      "description": "amount / available balance",
+      "kind": "numeric"
+    },
+    {
+      "name": "velocity_1h",
+      "description": "customer transactions in the last hour",
+      "kind": "numeric"
+    },
+    {
+      "name": "velocity_24h",
+      "description": "customer transactions in the last 24 hours",
+      "kind": "numeric"
+    },
+    {
+      "name": "spend_24h_ratio",
+      "description": "24h spend / typical daily spend",
+      "kind": "numeric"
+    },
+    {
+      "name": "merchant_category",
+      "description": "merchant category",
+      "kind": "categorical"
+    },
+    {
+      "name": "channel",
+      "description": "payment channel",
+      "kind": "categorical"
+    },
+    {
+      "name": "hour_sin",
+      "description": "time of day (sine)",
+      "kind": "numeric"
+    },
+    {
+      "name": "hour_cos",
+      "description": "time of day (cosine)",
+      "kind": "numeric"
+    },
+    {
+      "name": "is_night",
+      "description": "local time 00:00-05:00",
+      "kind": "binary"
+    },
+    {
+      "name": "device_age_days",
+      "description": "days since this device was first seen for the customer",
+      "kind": "numeric"
+    },
+    {
+      "name": "is_new_device",
+      "description": "device never seen for this customer",
+      "kind": "binary"
+    },
+    {
+      "name": "device_shared_customers",
+      "description": "other customers seen on this device (graph)",
+      "kind": "numeric"
+    },
+    {
+      "name": "ip_risk",
+      "description": "IP reputation risk 0-1 (threat intel + hosting/proxy/tor)",
+      "kind": "numeric"
+    },
+    {
+      "name": "geo_distance_km",
+      "description": "distance from the customer's home location (log km)",
+      "kind": "numeric"
+    },
+    {
+      "name": "beneficiary_new",
+      "description": "first payment to this beneficiary",
+      "kind": "binary"
+    },
+    {
+      "name": "beneficiary_inbound_senders",
+      "description": "distinct customers paying this beneficiary (graph, mule signal)",
+      "kind": "numeric"
+    },
+    {
+      "name": "account_age_days",
+      "description": "account age in days (log)",
+      "kind": "numeric"
+    },
+    {
+      "name": "secs_since_login",
+      "description": "seconds since session login (log)",
+      "kind": "numeric"
+    },
+    {
+      "name": "failed_logins_24h",
+      "description": "failed logins in the last 24 hours",
+      "kind": "numeric"
+    },
+    {
+      "name": "mfa_changes_24h",
+      "description": "MFA reset/changes in the last 24 hours",
+      "kind": "numeric"
+    },
+    {
+      "name": "kyc_risk",
+      "description": "most recent KYC risk 0-1",
+      "kind": "numeric"
+    },
+    {
+      "name": "deepfake_risk",
+      "description": "most recent deepfake risk for the customer's verification media 0-1",
+      "kind": "numeric"
+    },
+    {
+      "name": "network_risk",
+      "description": "most recent network/IDS risk linked to the session IP 0-1",
+      "kind": "numeric"
+    },
+    {
+      "name": "behavior_anomaly",
+      "description": "behavioural anomaly score 0-1 for the session",
+      "kind": "numeric"
+    },
+    {
+      "name": "graph_risk",
+      "description": "propagated graph risk of the customer/account 0-1",
+      "kind": "numeric"
+    }
+  ],
+  "comparison": {
+    "lightgbm": {
+      "roc_auc": 0.9592,
+      "pr_auc": 0.9245,
+      "recall_at_1pct_fpr": 0.9094,
+      "train_seconds": 0.8064,
+      "best_iteration": 179,
+      "latency_ms_p50_single_row": 1.3634
+    },
+    "xgboost": {
+      "roc_auc": 0.9572,
+      "pr_auc": 0.9227,
+      "recall_at_1pct_fpr": 0.9094,
+      "train_seconds": 0.5306,
+      "best_iteration": 78,
+      "latency_ms_p50_single_row": 2.0928
+    }
+  },
+  "selected": "lightgbm",
+  "selection_rationale": "PR-AUC within 0.005; chose the lower single-row latency",
+  "metrics": {
+    "roc_auc": 0.9582,
+    "pr_auc": 0.9178,
+    "recall_at_1pct_fpr": 0.9095,
+    "brier": 0.00483
+  },
+  "segment_report": {
+    "app_scam": {
+      "n": 142,
+      "flag_rate_at_0.65": 1.0
+    },
+    "ato": {
+      "n": 181,
+      "flag_rate_at_0.65": 0.994
+    },
+    "big_purchase": {
+      "n": 1146,
+      "flag_rate_at_0.65": 0.0
+    },
+    "card_testing": {
+      "n": 128,
+      "flag_rate_at_0.65": 1.0
+    },
+    "deepfake_onboarding": {
+      "n": 90,
+      "flag_rate_at_0.65": 1.0
+    },
+    "mule": {
+      "n": 174,
+      "flag_rate_at_0.65": 0.989
+    },
+    "new_payee": {
+      "n": 1357,
+      "flag_rate_at_0.65": 0.001
+    },
+    "new_phone": {
+      "n": 802,
+      "flag_rate_at_0.65": 0.0
+    },
+    "night_owl": {
+      "n": 928,
+      "flag_rate_at_0.65": 0.0
+    },
+    "risky_but_legit": {
+      "n": 254,
+      "flag_rate_at_0.65": 0.0
+    },
+    "routine": {
+      "n": 9804,
+      "flag_rate_at_0.65": 0.0
+    },
+    "traveller": {
+      "n": 994,
+      "flag_rate_at_0.65": 0.0
+    }
+  },
+  "explainability": "SHAP TreeExplainer (exact, tree_path_dependent) on the raw booster margin",
+  "limitations": "Trained on synthetic data only; metrics describe separability of the simulator, not real-world performance.",
+  "feature_order": [
+    "log_amount",
+    "amount_deviation",
+    "amount_to_balance",
+    "velocity_1h",
+    "velocity_24h",
+    "spend_24h_ratio",
+    "merchant_category",
+    "channel",
+    "hour_sin",
+    "hour_cos",
+    "is_night",
+    "device_age_days",
+    "is_new_device",
+    "device_shared_customers",
+    "ip_risk",
+    "geo_distance_km",
+    "beneficiary_new",
+    "beneficiary_inbound_senders",
+    "account_age_days",
+    "secs_since_login",
+    "failed_logins_24h",
+    "mfa_changes_24h",
+    "kyc_risk",
+    "deepfake_risk",
+    "network_risk",
+    "behavior_anomaly",
+    "graph_risk"
+  ]
+}

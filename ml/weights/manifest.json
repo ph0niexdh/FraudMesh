@@ -1,0 +1,26 @@
+{
+  "effnb4_best.pth": {
+    "url": "https://github.com/SCLBD/DeepfakeBench/releases/download/v1.0.1/effnb4_best.pth",
+    "sha256": "74cbd82d7be1bf5e6adec717824274a95b4509b02e1e78401608d32b3cbeaf0f",
+    "purpose": "Primary deepfake classifier (EfficientNet-B4, FaceForensics++ c23)",
+    "license": "CC BY-NC 4.0 (DeepfakeBench)"
+  },
+  "meso4_best.pth": {
+    "url": "https://github.com/SCLBD/DeepfakeBench/releases/download/v1.0.1/meso4_best.pth",
+    "sha256": "a362ebbef2658daa551d808fbfccd57f0b5fd34fda46a05996e807cccddff4e0",
+    "purpose": "Lightweight fallback deepfake classifier (MesoNet-4)",
+    "license": "CC BY-NC 4.0 (DeepfakeBench)"
+  },
+  "face_detection_yunet_2023mar.onnx": {
+    "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx",
+    "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+    "purpose": "Face detection + 5 landmarks (YuNet)",
+    "license": "MIT (OpenCV Zoo)"
+  },
+  "face_recognition_sface_2021dec.onnx": {
+    "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx",
+    "sha256": "0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79",
+    "purpose": "Face embeddings for face/document matching (SFace)",
+    "license": "Apache-2.0 (OpenCV Zoo)"
+  }
+}

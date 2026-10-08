@@ -1,0 +1,20 @@
+[project]
+name = "fraudmesh"
+version = "2.0.0"
+description = "FraudMesh — unified fraud, identity and cyber-security intelligence platform"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+timeout = 300
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]
+markers = [
+  "slow: deep-learning inference tests",
+]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"

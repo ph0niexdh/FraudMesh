@@ -1,0 +1,134 @@
+{
+  "name": "risk-fusion",
+  "version": "logit-fusion-20261008",
+  "model_type": "Calibrated logistic fusion (logit space) with corroboration term",
+  "trained_at": "2026-10-08T16:13:16+00:00",
+  "domains": [
+    "transaction",
+    "behavior",
+    "identity",
+    "deepfake",
+    "device",
+    "graph",
+    "network",
+    "temporal"
+  ],
+  "weights": {
+    "transaction": 3.3879,
+    "behavior": 0.0,
+    "identity": 2.2094,
+    "deepfake": 4.3755,
+    "device": 0.0,
+    "graph": 1.418,
+    "network": 1.3778,
+    "temporal": 3.113
+  },
+  "corroboration_weight": 0.4712,
+  "corroboration_threshold": 0.6,
+  "bias": -4.795,
+  "metrics": {
+    "roc_auc": 0.95,
+    "pr_auc": 0.9166
+  },
+  "dataset": {
+    "source": "simulated case-level domain-risk vectors",
+    "cases": 40000,
+    "attack_rate": 0.348,
+    "benign_loud_rate": {
+      "transaction": 0.1,
+      "behavior": 0.3,
+      "identity": 0.12,
+      "deepfake": 0.03,
+      "device": 0.25,
+      "graph": 0.1,
+      "network": 0.18,
+      "temporal": 0.04
+    },
+    "attack_templates": [
+      {
+        "weight": 0.2,
+        "domains": [
+          "transaction",
+          "behavior",
+          "identity",
+          "deepfake",
+          "device",
+          "temporal"
+        ],
+        "optional": [
+          "graph",
+          "network"
+        ]
+      },
+      {
+        "weight": 0.18,
+        "domains": [
+          "transaction",
+          "behavior",
+          "identity",
+          "device",
+          "temporal"
+        ],
+        "optional": [
+          "network",
+          "graph"
+        ]
+      },
+      {
+        "weight": 0.16,
+        "domains": [
+          "deepfake",
+          "identity"
+        ],
+        "optional": [
+          "device"
+        ]
+      },
+      {
+        "weight": 0.12,
+        "domains": [
+          "graph",
+          "transaction"
+        ],
+        "optional": [
+          "device"
+        ]
+      },
+      {
+        "weight": 0.12,
+        "domains": [
+          "network",
+          "identity"
+        ],
+        "optional": [
+          "behavior",
+          "temporal"
+        ]
+      },
+      {
+        "weight": 0.08,
+        "domains": [
+          "network",
+          "temporal"
+        ],
+        "optional": []
+      },
+      {
+        "weight": 0.08,
+        "domains": [
+          "transaction",
+          "behavior"
+        ],
+        "optional": []
+      },
+      {
+        "weight": 0.06,
+        "domains": [
+          "deepfake"
+        ],
+        "optional": []
+      }
+    ]
+  },
+  "limitations": "Weights reflect the simulator's assumptions about detector behaviour; re-fit on labelled production cases."
+}

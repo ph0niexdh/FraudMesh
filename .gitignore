@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+.vite/
+apps/web/test-results/
+apps/web/playwright-report/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+
+# Large model weights (downloaded by ml/deepfake/download_weights.py)
+ml/weights/*
+!ml/weights/README.md
+!ml/weights/manifest.json
+
+# Runtime data
+data/
+*.log
+.DS_Store
